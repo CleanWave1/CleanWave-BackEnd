@@ -1,0 +1,6 @@
+@cleanwave_platform_HostAddress = http://localhost:5228
+
+GET {{cleanwave_platform_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
