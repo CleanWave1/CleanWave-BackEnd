@@ -21,7 +21,7 @@ public class AccountsController(IAccountCommandService accountCommandService, IA
     }
 
     [HttpGet("{accountId:int}")]
-    public async Task<IActionResult> GetAccountId([FromRoute] int tutorialId)
+    public async Task<IActionResult> GetAccountId([FromRoute] int accountId)
     {
         var getAllAccountsQuery = new GetAllAccountsQuery();
         var accounts = await accountQueryService.Handle(getAllAccountsQuery);
