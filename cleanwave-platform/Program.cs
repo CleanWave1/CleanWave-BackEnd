@@ -17,8 +17,30 @@ using cleanwave_platform.Shared.Infraestructure.Persistance.EFC.Configuration;
 using cleanwave_platform.Shared.Infraestructure.Persistance.EFC.Repositories;
 using cleanwave_platform.Shared.Interfaces.ASP.Configuration;
 using Microsoft.EntityFrameworkCore;
+using cleanwave_platform.Profiles.Application.Internal.CommandServices;
+using cleanwave_platform.Profiles.Application.Internal.QueryServices;
+using cleanwave_platform.Profiles.Domain.Repositories;
+using cleanwave_platform.Profiles.Domain.Services;
+using cleanwave_platform.Profiles.Infraestructure.Persistence.EFC.Repositories;
+using cleanwave_platform.Shared.Interfaces.ASP.Configuration.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()));
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(
+    options =>
+    {
+        if (connectionString != null)
+            if (builder.Environment.IsDevelopment())
+                options.UseMySQL(connectionString)
+                    .LogTo(Console.WriteLine, LogLevel.Information)
+                    .EnableSensitiveDataLogging()
+                    .EnableDetailedErrors();
+            else if (builder.Environment.IsProduction())
+                options.UseMySQL(connectionString)
+                    .LogTo(Console.WriteLine, LogLevel.Error)
+                    .EnableDetailedErrors();
+    });
 
 builder.Services.AddControllers(options => options.Conventions.Add(new KebabCaseRouteNamingConvention()));
 
@@ -78,6 +100,15 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IHashingService, HashingService>();
 builder.Services.AddScoped<IIamContextFacade, IamContextFacade>();
 
+// Customer Bounded Context Injection Configuration
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<ICustomerQueryService, CustomerQueryService>();
+builder.Services.AddScoped<ICustomerCommandService, CustomerCommandService>();
+
+// Cleaning Entrepreneur Bounded Context Injection Configuration
+builder.Services.AddScoped<ICleaningEntrepreneurRepository, CleaningEntrepreneurRepository>();
+builder.Services.AddScoped<ICleaningEntrepreneurQueryService, CleaningEntrepreneurQueryService>();
+builder.Services.AddScoped<ICleaningEntrepreneurCommandService, CleaningEntrepreneurCommandService>();
 
 var app = builder.Build();
 
